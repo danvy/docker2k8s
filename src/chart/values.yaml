@@ -1,0 +1,14 @@
+nameOverride: ''
+fullnameOverride: ''
+web:
+  replicaCount: 1
+  image:
+    repository:
+    tag:
+    pullPolicy:
+api:
+  replicaCount: 1
+  image:
+    repository:
+    tag:
+    pullPolicy:

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: app
+    part: api
+    version: "1.0"
+spec:
+  selector:
+    matchLabels:
+      app: app
+      part: api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: app
+        part: app
+        version: "1.0"
+    spec:
+      containers:
+        - name: "api"
+          image: "api"
+          imagePullPolicy: "IfNotPresent"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "125m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              scheme: HTTP
+              port: http
+            initialDelaySeconds: 10
+            failureThreshold: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: /
+              scheme: HTTP
+              port: http
+            initialDelaySeconds: 10
+            failureThreshold: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1

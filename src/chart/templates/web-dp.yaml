@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-web
+  labels:
+    app: app-web
+    part: web
+    project: app
+    version: {{ .Values.web.image.tag }}
+spec:
+  selector:
+    matchLabels:
+      app: app-web
+  replicas: {{ .Values.web.replicaCount | default 1 }}
+  template:
+    metadata:
+      labels:
+        app: app-web
+        part: web
+        project: app
+        version: {{ .Values.web.image.tag }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - web
+              - key: part
+                operator: In
+                values:
+                - web
+      # affinity:
+      #   podAntiAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       - labelSelector:
+      #           matchExpressions:
+      #             - key: app
+      #               operator: In
+      #               values:
+      #               - app
+      #             - key: part
+      #               operator: In
+      #               values:
+      #               - web
+      #         topologyKey: kubernetes.io/hostname
+      #         #weight: 100
+      containers:
+        - name: web
+          image: "{{ .Values.web.image.repository }}:{{ .Values.web.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.web.image.pullPolicy | default "IfNotPresent" }}
+          resources:
+            requests:
+              memory: "8Mi"
+              cpu: "50m"
+            limits:
+              memory: "32Mi"
+              cpu: "125m"
+          env:
+            - name: appInsKey
+              value: "{{ .Values.applicationInsights.instrumentationKey }}"
+            - name: authenticationClientID
+              value: "{{ .Values.authentication.clientId }}"
+            - name: authenticationAuthority
+              value: "{{ .Values.authentication.authority }}"
+            - name: authenticationConsentScopes
+              value: '{{ .Values.authentication.consentScopes }}'
+            - name: authenticationCacheLocation
+              value: "{{ .Values.authentication.cacheLocation }}"
+            - name: authenticationPiiLoggingEnabled
+              value: "{{ .Values.authentication.piiLoggingEnabled }}"
+            - name: authenticationProtectedResourceMap
+              value: "{{ .Values.authentication.protectedResourceMap }}"
+            - name: stripeApiKey
+              value: "{{ .Values.stripe.apiKey }}"
+            - name: stripeRedirectUri
+              value: "{{ .Values.stripe.redirectUri }}"
+            - name: keycloakRealm
+              value: '{{ .Values.keycloak.realm }}'
+            - name: keycloakUrl
+              value: '{{ .Values.keycloak.url }}'
+            - name: keycloakClientId
+              value: '{{ .Values.keycloak.clientId }}'
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/usr/sbin/nginx", "-s", "quit"]
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8443
+          readinessProbe:
+            httpGet:
+              path: /
+              scheme: HTTP
+              port: http
+            initialDelaySeconds: 10
+            failureThreshold: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+          livenessProbe:
+            httpGet:
+              path: /
+              scheme: HTTP
+              port: http
+            initialDelaySeconds: 10
+            failureThreshold: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1

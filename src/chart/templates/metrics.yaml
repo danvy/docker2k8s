@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: app-metrics
+  labels:
+    app: app
+    part: prometheus
+spec:
+  jobLabel: app-metrics
+  namespaceSelector:
+    matchNames:
+      - default
+  selector:
+    matchLabels:
+      app: app
+    matchExpressions:
+      - {key: prometheus-ignore, operator: DoesNotExist}
+  endpoints:
+  - port: http
+    path: /metrics

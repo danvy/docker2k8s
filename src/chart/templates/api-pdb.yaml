@@ -1,0 +1,14 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: app-api
+  labels:
+    app: app-api
+    project: app
+    part: api
+    version: {{ .Values.api.image.tag }}
+spec:
+  selector:
+    matchLabels:
+      app: app-api
+  minAvailable: 1
