@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: "web"
-          image: "web"
+          image: "tech3.azurecr.io/web"
           imagePullPolicy: "IfNotPresent"
           resources:
             requests:

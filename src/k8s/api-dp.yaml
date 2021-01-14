@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: "api"
-          image: "api"
+          image: "tech3.azurecr.io/api:1.0"
           imagePullPolicy: "IfNotPresent"
           resources:
             requests:
